@@ -1,30 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Counter {
-    int256 public count;
+contract Lottery {
     address public owner;
+    address[] public players;
 
     constructor() {
         owner = msg.sender;
     }
 
-    function increment() public {
-        count += 1;
+    function enter() public payable {
+        require(msg.value == 2 ether, "Please pay 2 ETH to enter!");
+        players.push(msg.sender);
     }
 
-    function decrement() public {
-        require(count > 0, "Count cannot be less than zero!");
-        count -= 1;
-    }
-
-    function getCount() public view returns (int256) {
-        return count;
-    }
-
-    function reset() public payable {
+    // Випадковий переможець (тільки власник може викликати)
+    function pickWinner() public {
         require(msg.sender == owner, "You are not the owner!");
-        require(msg.value == 2 ether, "Please pay 2 ETH for reset counter!");
-        count = 0;
+        require(players.length > 0, "No players!");
+
+        uint index = random() % players.length;
+        address winner = players[index];
+
+        // Відправити весь баланс переможцю
+        payable(winner).transfer(address(this).balance);
+
+        // Скинути гравців
+        players = new address[](0);
+    }
+
+    function getPlayers() public view returns (address[] memory) {
+        return players;
+    }
+
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+
+    // Проста функція рандому (не для продакшну!)
+    function random() private view returns (uint) {
+        return uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, players)));
     }
 }
