@@ -1,0 +1,23 @@
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+
+const ganacheAccounts = [
+  process.env.GANACHE_PRIVATE_KEY_1,
+  process.env.GANACHE_PRIVATE_KEY_2,
+  process.env.GANACHE_PRIVATE_KEY_3,
+].filter((account): account is string => Boolean(account));
+
+const config: HardhatUserConfig = {
+  solidity: "0.8.28",
+  networks: {
+    hardhat: {
+      chainId: 5777,
+    },
+    ganache: {
+      url: process.env.GANACHE_RPC_URL || "http://127.0.0.1:7545",
+      accounts: ganacheAccounts,
+    },
+  }
+};
+
+export default config;
